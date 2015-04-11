@@ -8,10 +8,28 @@ import android.view.MenuItem;
 
 public class MainActivity extends ActionBarActivity {
 
+    //Declaring
+    private UserTABLE objUserTABLE;
+    private FoodTABLE objFoodTABLE;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Create or Connected SQLite
+        objUserTABLE = new UserTABLE(this);
+        objFoodTABLE = new FoodTABLE(this);
+
+
+        //Test Add New Value
+        testAddValue();
+
+    }   // Main Method
+
+    private void testAddValue() {
+        objUserTABLE.addNewDataUser("testUser", "testPass", "testName");
+        objFoodTABLE.addNewDataFood("testFood", 123.0);
     }
 
     @Override
@@ -35,4 +53,4 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-}
+}   // Main Class
