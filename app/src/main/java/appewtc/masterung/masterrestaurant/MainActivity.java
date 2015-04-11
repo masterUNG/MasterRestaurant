@@ -1,9 +1,24 @@
 package appewtc.masterung.masterrestaurant;
 
+import android.os.Build;
+import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -21,11 +36,77 @@ public class MainActivity extends ActionBarActivity {
         objUserTABLE = new UserTABLE(this);
         objFoodTABLE = new FoodTABLE(this);
 
-
         //Test Add New Value
-        testAddValue();
+        //testAddValue();
+
+        //Synchronize mySQL to SQLite
+        synMySQLtoSQLite();
 
     }   // Main Method
+
+    private void synMySQLtoSQLite() {
+
+        //setup policy
+        if (Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy myPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(myPolicy);
+        }
+
+        InputStream objInputStream = null;
+        String strJSON = "";
+
+        // Create InputStream
+        try {
+
+            HttpClient objHttpClient = new DefaultHttpClient();
+            HttpPost objHttpPost = new HttpPost("http://swiftcodingthai.com/rest/php_get_data_master.php");
+            HttpResponse objHttpResponse = objHttpClient.execute(objHttpPost);
+            HttpEntity objHttpEntity = objHttpResponse.getEntity();
+            objInputStream = objHttpEntity.getContent();
+
+        } catch (Exception e) {
+            Log.d("rest", "Error InputStream ==> " + e.toString());
+        }
+
+        //Create JSON String
+        try {
+
+            BufferedReader objBufferedReader = new BufferedReader(new InputStreamReader(objInputStream, "UTF-8"));
+            StringBuilder objStringBuilder = new StringBuilder();
+            String strLine = null;
+
+            while ((strLine = objBufferedReader.readLine()) != null ) {
+                objStringBuilder.append(strLine);
+            }
+
+            objInputStream.close();
+            strJSON = objStringBuilder.toString();
+
+        } catch (Exception e) {
+            Log.d("rest", "Error Create String ==> " + e.toString());
+        }
+
+
+        //Updata JSON to SQLite
+        try {
+
+            final JSONArray objJsonArray = new JSONArray(strJSON);
+            for (int i = 0; i < objJsonArray.length(); i++) {
+
+                JSONObject objJSONObject = objJsonArray.getJSONObject(i);
+                String strUser = objJSONObject.getString("User");
+                String strPassword = objJSONObject.getString("Password");
+                String strName = objJSONObject.getString("Name");
+                objUserTABLE.addNewDataUser(strUser, strPassword, strName);
+
+            }
+
+        } catch (Exception e) {
+            Log.d("rest", "Error Update ==> " + e.toString());
+        }
+
+
+    }   // synMySQLtoSQLite
 
     private void testAddValue() {
         objUserTABLE.addNewDataUser("testUser", "testPass", "testName");
