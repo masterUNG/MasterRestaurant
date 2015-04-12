@@ -1,12 +1,17 @@
 package appewtc.masterung.masterrestaurant;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -26,11 +31,16 @@ public class MainActivity extends ActionBarActivity {
     //Declaring
     private UserTABLE objUserTABLE;
     private FoodTABLE objFoodTABLE;
+    private EditText edtUser, edtPassword;
+    private String strUserChoose, strPasswordChoose, strPasswordTrue, strName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Initial Widget
+        initialWidget();
 
         //Create or Connected SQLite
         objUserTABLE = new UserTABLE(this);
@@ -39,10 +49,103 @@ public class MainActivity extends ActionBarActivity {
         //Test Add New Value
         //testAddValue();
 
+        //Delete All Data
+        deleteAllData();
+
         //Synchronize mySQL to SQLite
         synMySQLtoSQLite();
 
     }   // Main Method
+
+    //Event Click Login
+    public void clickLogin(View view) {
+
+        strUserChoose = edtUser.getText().toString().trim();
+        strPasswordChoose = edtPassword.getText().toString().trim();
+
+        if (strUserChoose.equals("") || strPasswordChoose.equals("") ) {
+
+            //Have Space Status
+            MyAlertDialog objMyAlertDialog = new MyAlertDialog();
+            objMyAlertDialog.myDialog(MainActivity.this, "Have Space", "Please Fill All Every blank");
+
+        } else {
+
+            //Check User
+            checkUser();
+
+        }
+
+    }   // clickLogin
+
+    private void checkUser() {
+        try {
+
+            String strMyResult[] = objUserTABLE.searchUser(strUserChoose);
+            strPasswordTrue = strMyResult[2];
+            strName = strMyResult[3];
+
+            Log.d("rest", "Welcome " + strMyResult[3]);
+
+            //Check Password
+            checkPassword();
+
+        } catch (Exception e) {
+
+            //No This User Status
+            MyAlertDialog objMyAlertDialog = new MyAlertDialog();
+            objMyAlertDialog.myDialog(MainActivity.this, "No This User", "No " + strUserChoose + " in my Database");
+
+        }
+    }
+
+    private void checkPassword() {
+        if (strPasswordChoose.equals(strPasswordTrue)) {
+
+            welcomeOfficer();
+
+        } else {
+            MyAlertDialog objMyAlertDialog = new MyAlertDialog();
+            objMyAlertDialog.myDialog(MainActivity.this, "Password False", "Please Try Again Password False");
+        }
+    }
+
+    private void welcomeOfficer() {
+
+        AlertDialog.Builder objBuilder = new AlertDialog.Builder(this);
+        objBuilder.setIcon(R.drawable.restaurant);
+        objBuilder.setTitle("ยินดีต้อนรับ");
+        objBuilder.setMessage("ยินดีต้อนรับ คุณ" + strName + "\n" + "สู่ระบบของเรา");
+        objBuilder.setCancelable(false);
+        objBuilder.setPositiveButton("ตกลง", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        objBuilder.setNegativeButton("ไม่ตกลง", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                edtUser.setText("");
+                edtPassword.setText("");
+                dialogInterface.dismiss();
+            }
+        });
+        objBuilder.show();
+    }
+
+    private void initialWidget() {
+        edtUser = (EditText) findViewById(R.id.editText);
+        edtPassword = (EditText) findViewById(R.id.editText2);
+    }
+
+    private void deleteAllData() {
+
+        SQLiteDatabase objSqLiteDatabase = openOrCreateDatabase("Restaurant.db", MODE_PRIVATE, null);
+        objSqLiteDatabase.delete("userTABLE", null, null);
+        objSqLiteDatabase.delete("foodTABLE", null, null);
+
+    }
 
     private void synMySQLtoSQLite() {
 
