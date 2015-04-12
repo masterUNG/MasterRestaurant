@@ -4,6 +4,9 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -28,7 +31,29 @@ public class OrderActivity extends ActionBarActivity {
         //Show Officer
         showOfficer();
 
+        //Show Desk
+        showDesk();
+
     }   // onCreate
+
+    private void showDesk() {
+        final String strSpinnerDesk[] = getResources().getStringArray(R.array.desk);
+        ArrayAdapter<String> objArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, strSpinnerDesk);
+        mySpinner.setAdapter(objArrayAdapter);
+
+        mySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                strDesk = strSpinnerDesk[i];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                strDesk = strSpinnerDesk[0];
+            }
+        });
+
+    }
 
     private void showOfficer() {
         strOfficer = getIntent().getExtras().getString("Officer");
