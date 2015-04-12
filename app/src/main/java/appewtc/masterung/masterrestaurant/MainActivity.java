@@ -2,6 +2,7 @@ package appewtc.masterung.masterrestaurant;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
@@ -120,7 +121,14 @@ public class MainActivity extends ActionBarActivity {
         objBuilder.setPositiveButton("ตกลง", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+
+                //Intent to OrderActivity
+                Intent objIntent = new Intent(MainActivity.this, OrderActivity.class);
+                objIntent.putExtra("Officer", strName);
+                startActivity(objIntent);
                 dialogInterface.dismiss();
+                deleteAllData();
+                finish();
             }
         });
         objBuilder.setNegativeButton("ไม่ตกลง", new DialogInterface.OnClickListener() {
